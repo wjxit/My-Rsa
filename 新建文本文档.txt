@@ -1,0 +1,81 @@
+String token=(String) ActionContext.getContext().getSession().get("token");
+        System.err.println(token);
+		UserService userService = new UserService();
+        UserServiceSoap userServiceSoap =userService.getUserServiceSoap();
+        UserData user=(UserData)ActionContext.getContext().getSession().get("user");
+        	JSONObject jsonObject=new JSONObject(json);
+            String password=jsonObject.getString("password");//登录密码
+            String passwords=jsonObject.getString("passwords");//确认密码
+            if(password.equals(passwords)){
+          		json ="{\"list\":[{\"suc\":0,\"msg\":\"登录密码与确认密码不匹配，请重新输入密码。\"}]}";
+        		ScriptHelper.MessageBox(json);
+        		return null;
+        	  }
+            String userName=jsonObject.getString("userName");//用户名
+			String gender=jsonObject.getString("gender");//用户性别
+			String birthday=jsonObject.getString("birthday");   ///用户生日
+			String mobile=jsonObject.getString("mobile");//用户手机
+			String phone=jsonObject.getString("phone");//用户电话
+			String email=jsonObject.getString("email");//用户邮件
+			String address=jsonObject.getString("address");//用户地址
+			String postal=jsonObject.getString("postal");//用户邮编
+			String height=jsonObject.getString("height");
+				//Integer.parseInt(request.getParameter("height"));//用户身高
+			String weight=jsonObject.getString("weight");
+				//Integer.parseInt(request.getParameter("weight"));//用户体重
+			String waist=jsonObject.getString("waist");
+				//Integer.parseInt(request.getParameter("waist"));//用户腰围
+			String id=request.getParameter("userID")== null?user.getUserID():request.getParameter("userID");
+	        UserData model=userServiceSoap.getUserByID(token,id);
+	        	if(model!=null){
+        			model.setUserName(userName);
+        			model.setGender(gender);
+        			model.setBirthday(birthday);
+        			model.setMobile(mobile);
+        			model.setPhone(phone);
+        			model.setAddress(address);
+        			model.setPostal(postal);
+        			model.setEmail(email);
+        			if(height==null || "".equals(height)){
+        				model.setHeight(0);
+        			}else{
+        				try {
+							model.setHeight(Integer.parseInt(height));
+						} catch (Exception e) {
+							// TODO: handle exception
+							json ="{\"list\":[{\"suc\":0,\"msg\":\"用户身高输入错误，请重新输入。\"}]}";
+		              		ScriptHelper.MessageBox(json);
+		              		return null;
+						}
+        			}
+        			if(weight==null || "".equals(weight)){
+        				model.setWeight(0);
+        			}else{
+        				try {
+							model.setWeight(Integer.parseInt(weight));
+						} catch (Exception e) {
+							// TODO: handle exception
+            				model.setWeight(Integer.parseInt(weight));	
+            				json ="{\"list\":[{\"suc\":0,\"msg\":\"用户体重输入错误，请重新输入。\"}]}";
+            				ScriptHelper.MessageBox(json);
+            				return null;
+						}
+        			}
+        			if(waist==null || "".equals(waist)){
+        				model.setWaist(0);
+        			}else{
+        				try {
+							model.setWeight(Integer.parseInt(waist));
+						} catch (Exception e) {
+							json ="{\"list\":[{\"suc\":0,\"msg\":\"用户腰围输入错误，请重新输入。\"}]}";
+		              		ScriptHelper.MessageBox(json);
+		              		return null;
+						}
+        			}
+        			userServiceSoap.updateUser(token,model,CipherUtil.generatePassword(password));
+	        		}else{
+	        			json ="{\"list\":[{\"suc\":0,\"msg\":\"修改用户信息失败，用户帐号不存在。\"}]}";
+	        			ScriptHelper.MessageBox(json);
+	        			return null;
+	        		}
+}	
